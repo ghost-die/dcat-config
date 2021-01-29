@@ -1,0 +1,31 @@
+{
+    "name": "ghost/dcat-config",
+    "description": "Description...",
+    "type": "library",
+    "keywords": ["dcat-admin", "extension"],
+    "homepage": "https://github.com/ghost/dcat-config",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "your name",
+            "email": "your email"
+        }
+    ],
+    "require": {
+        "php": ">=7.1.0",
+        "dcat/laravel-admin": "~2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ghost\\DcatConfig\\": "src/"
+        }
+    },
+    "extra": {
+        "dcat-admin": "Ghost\\DcatConfig\\DcatConfigServiceProvider",
+        "laravel": {
+            "providers": [
+                "Ghost\\DcatConfig\\DcatConfigServiceProvider"
+            ]
+        }
+    }
+}
