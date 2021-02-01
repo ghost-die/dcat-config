@@ -20,9 +20,9 @@ class FileController
 
         // 获取上传的文件
         $file = $this->file();
-
+        //upload_failed
         if (! $file) {
-            return $this->responseErrorMessage('文件上传失败');
+            return $this->responseErrorMessage(trans('admin.upload_failed'));
         }
 
         // 获取上传的字段名称
@@ -37,6 +37,6 @@ class FileController
 
         $path = "{$dir}/$newName";
 
-        return $result ? $this->responseUploaded($path, $disk->url($path)) : $this->responseErrorMessage('文件上传失败');
+        return $result ? $this->responseUploaded($path, $disk->url($path)) : $this->responseErrorMessage(trans('admin.upload_failed'));
     }
 }

@@ -1,14 +1,14 @@
 {
     "name": "ghost/dcat-config",
-    "description": "Description...",
+    "description": "配置管理",
     "type": "library",
     "keywords": ["dcat-admin", "extension"],
     "homepage": "https://github.com/ghost/dcat-config",
     "license": "MIT",
     "authors": [
         {
-            "name": "your name",
-            "email": "your email"
+            "name": "Ghost",
+            "email": "wangqun1436@gmail.com"
         }
     ],
     "require": {
