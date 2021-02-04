@@ -4,11 +4,12 @@ namespace Ghost\DcatConfig\Http\Controllers;
 
 
 use Dcat\Admin\Form;
-use Dcat\Admin\Grid;
 use Dcat\Admin\Layout\Content;
+use Dcat\Admin\Widgets\Tooltip;
 use Ghost\DcatConfig\DcatConfigServiceProvider;
 use Ghost\DcatConfig\Models\AdminConfig;
 use Ghost\DcatConfig\Tools\Builder;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Dcat\Admin\Layout\Row;
 
@@ -63,6 +64,12 @@ class DcatConfigController extends Controller
      */
 	public function index(Content $content): Content
     {
+        Tooltip::make('.dd-toggle')
+            ->top();
+
+        //Form::dialog('编辑')
+        //    ->click('.edit-form')
+        //    ->success('Dcat.reload()'); // 编辑成功后刷新页面
         return $content
             ->title($this->title())
             ->description($this->description())
@@ -77,16 +84,50 @@ class DcatConfigController extends Controller
             );
     }
 
+    public function edit($id, Content $content)
+    {
+        $form = (new Builder(Form::make(new AdminConfig())))->edit ($id)->getForm ();
+        return $content
+            ->title($this->title())
+            ->description($this->description())
+            ->breadcrumb(
+                $this->breadcrumb()
+            )
+            ->body(
+                function (Row $row) use ($form){
+                    $row->column(8,$form);
+                    $row->column(4,$this->grid  ());
+                }
+            );
+    }
+
+    public function putEdit($id)
+    {
+
+        $configModel= new AdminConfig();
+        $form = Form::make();
+        return (new Builder($form,$configModel))->putEdit($id)->getForm ()
+            ->response()
+            ->redirect(admin_url('config'))
+            ->success(trans('admin.save_succeeded'));
+    }
+
+
+
+
     /**
      * @param $id
      * @return mixed
      */
 	public function destroy($id){
-		
-		
-		$form = Form::make(new AdminConfig());
-		
-		return $form->destroy($id);
+
+
+        $configModel= new AdminConfig();
+        $form = Form::make();
+        return (new Builder($form,$configModel))->destroy ($id)->getForm ()
+            ->response()
+            ->refresh()
+            ->success(trans('admin.delete_succeeded'));
 	}
 
     /**

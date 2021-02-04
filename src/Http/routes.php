@@ -9,3 +9,6 @@ Route::post('config/addo', Controllers\DcatConfigController::class.'@addo');
 Route::post('config.do', Controllers\DcatConfigController::class.'@update');
 Route::any('files', Controllers\FileController::class.'@handle');
 Route::delete('config/{id}', Controllers\DcatConfigController::class.'@destroy');
+Route::get('config/{id}/edit', Controllers\DcatConfigController::class.'@edit');
+
+Route::put('config/{id}', Controllers\DcatConfigController::class.'@putEdit');

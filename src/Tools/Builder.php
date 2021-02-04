@@ -358,6 +358,51 @@ class Builder
         return trim(strip_tags(str_replace(["\n", "\t", "\r", " ", "&nbsp;"], '', htmlspecialchars_decode($str))));
     }
 
+
+    public function putEdit($id)
+    {
+        $request = request();
+
+        $option = $request->get('option');
+        $rule = $request->get('rule');
+
+        if ($option) {
+            $option = collect($this->textToArray($option))->map(function ($value, $k) {
+                if (false === strpos($value, ':')) {
+                    $attr = ['key' => $k, 'value' => $value];
+                } else {
+                    [$v1, $v2] = explode(':', $value);
+                    $attr = ['key' => $v1, 'value' => $v2];
+                }
+
+                return $attr;
+            });
+        }
+        if ($rule) {
+            $rule = $this->textToArray($rule);
+        }
+
+        $options = [
+            'rule'=>$rule,
+            'option'=>$option,
+        ];
+
+        $data = [
+            //'key'=>$tab.".".$key,
+            'value' => null,
+            'name' => $request->get('name'),
+            'help' => $request->get('help'),
+            'element' => $request->get('element'),
+            'options' => $options
+        ];
+
+        $this->model = $this->model::query()->find($id);
+
+        $this->model->forceFill($data)->save();
+
+        return $this;
+
+    }
     /**
      * @return $this
      */
@@ -467,6 +512,76 @@ class Builder
         return $this;
     }
 
+    /**
+     * @param $id
+     * @return $this
+     */
+    public function edit($id)
+    {
+
+        $tab = collect($this->config('tab'))->pluck('value', 'key');
+
+        $this->form->edit($id);
+        //$this->form->action()
+        $this->form->select('tab', DcatConfigServiceProvider::trans('dcat-config.builder.groups'))
+            ->options($tab)
+            ->customFormat(function (){
+               return substr($this->key, 0, strpos($this->key,'.'));
+            })
+            ->disable()
+            ->default($tab->keys()->first());
+
+        $this->form->text('key', DcatConfigServiceProvider::trans('dcat-config.builder.key'))->required()->customFormat(function (){
+
+            return substr($this->key,strrpos($this->key,".")+1);
+        })->disable();
+        $this->form->text('name', DcatConfigServiceProvider::trans('dcat-config.builder.name'))->required();
+        $this->form->select('element', DcatConfigServiceProvider::trans('dcat-config.builder.element'))->required()->when([
+            'select',
+            'multipleSelect',
+            'listbox',
+            'radio',
+            'checkbox',
+        ], function ( $form) {
+            $form->textarea('option', DcatConfigServiceProvider::trans('dcat-config.builder.option'))
+                ->customFormat(function (){
+
+                    $d= collect($this->options['option'])->pluck('value','key')->toArray();
+
+                    $text = '';
+                    foreach ($d as $k=>$v){
+
+                        $text .= $k.':'.$v."\r\n";
+                    }
+                    return $text;
+                })
+                ->placeholder("例如:\r\nkey1:value1\r\nkey2:value2");
+        })->options($this->option)->default('text');
+        $this->form->textarea('rule', DcatConfigServiceProvider::trans('dcat-config.builder.rule'))->customFormat(function (){
+
+
+            $d = $this->options['rule'];
+            $text = '';
+            foreach ((array)$d as $k=>$v){
+
+                $text .= $v."\r\n";
+            }
+            return $text;
+        });
+        $this->form->text('help', DcatConfigServiceProvider::trans('dcat-config.builder.help'));
+
+        $this->form->disableListButton();
+        $this->form->disableViewButton();
+        $this->form->disableViewCheck();
+        $this->form->disableEditingCheck();
+
+        $this->form->disableDeleteButton();
+
+
+
+        return $this;
+    }
+
     protected function order()
     {
         return $this->model::query()->limit(1)->orderByDesc('order')->value('order');
@@ -508,9 +623,18 @@ class Builder
     }
 
     /**
-     * @return null
+     * @param $id
+     * @return $this
      */
-    public function getForm()
+    public function destroy($id)
+    {
+        $this->model::destroy($id);
+        return $this;
+    }
+    /**
+     * @return \Dcat\Admin\Form
+     */
+    public function getForm(): \Dcat\Admin\Form
     {
         return $this->form;
     }
