@@ -14,34 +14,54 @@ use Dcat\Admin\Layout\Row;
 
 class DcatConfigController extends Controller
 {
-	
+    /**
+     * @var string
+     */
 	protected $title  ;
+
+    /**
+     * @var string
+     */
 	protected $description;
-	
+
+    /**
+     * @var array
+     */
 	protected $breadcrumb;
-	
-	
+
+    /**
+     * @return array|string|null
+     */
 	protected function title()
 	{
 		return $this->title ?: DcatConfigServiceProvider::trans('dcat-config.title');
 	}
-	
-	protected function breadcrumb()
-	{
+
+    /**
+     * @return array
+     */
+	protected function breadcrumb(): array
+    {
 		return $this->breadcrumb ?:[
 			'text' =>  DcatConfigServiceProvider::trans('dcat-config.title'),
 			'url' => admin_url ('config'),
 			//			        'icon'  => 'fa-toggle-off', // 图标可以留空
 		];
 	}
-	
-	
+
+    /**
+     * @return array|string|null
+     */
 	protected function description()
 	{
 		return $this->description ?: DcatConfigServiceProvider::trans('dcat-config.description');
 	}
-	
-	public function index(Content $content)
+
+    /**
+     * @param \Dcat\Admin\Layout\Content $content
+     * @return \Dcat\Admin\Layout\Content
+     */
+	public function index(Content $content): Content
     {
         return $content
             ->title($this->title())
@@ -56,9 +76,11 @@ class DcatConfigController extends Controller
 	            }
             );
     }
-	
-	
-	
+
+    /**
+     * @param $id
+     * @return mixed
+     */
 	public function destroy($id){
 		
 		
@@ -66,11 +88,12 @@ class DcatConfigController extends Controller
 		
 		return $form->destroy($id);
 	}
-	/**
-	 * @return mixed
-	 */
-	public function update()
-	{
+
+    /**
+     * @return \Dcat\Admin\Http\JsonResponse
+     */
+	public function update(): \Dcat\Admin\Http\JsonResponse
+    {
 
 		$configModel= new AdminConfig();
 		$form = Form::make();
@@ -85,7 +108,7 @@ class DcatConfigController extends Controller
 	 *
 	 * @return Content
 	 */
-    public function add(Content $content)
+    public function add(Content $content): Content
     {
 	    return $content
 		    ->title($this->title)
@@ -95,54 +118,58 @@ class DcatConfigController extends Controller
 		    )
 		    ->body($this->create());
     }
-	
-	
-	/**
-	 * @return mixed
-	 */
-    public function addo()
+
+    /**
+     * @return \Dcat\Admin\Http\JsonResponse
+     */
+    public function addo(): \Dcat\Admin\Http\JsonResponse
     {
 	    return (new Builder(Form::make(),new AdminConfig()))->store ()->getForm ()
 		    ->response()
 		    ->redirect(admin_url ('config'))
 		    ->success(trans('admin.save_succeeded'));
     }
-	
-	/**
-	 * @return null
-	 */
-	protected function form()
-	{
+
+    /**
+     * @return \Dcat\Admin\Form|null
+     */
+	protected function form(): ?Form
+    {
 		$configModel= new AdminConfig();
 		$form = Form::make();
 		return (new Builder($form,$configModel))->form ()->getForm ();
 	}
-	
-	/**
-	 * @return null
-	 */
-	protected function create()
-	{
+
+    /**
+     * @return \Dcat\Admin\Form|null
+     */
+	protected function create(): ?Form
+    {
 		return (new Builder(Form::make()))->create ()->getForm ();
 	}
-	
-	/**
-	 * @return Grid
-	 */
+
+    /**
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
+     */
 	protected function grid()
 	{
-		return Grid::make(AdminConfig::query ()->orderByDesc ('created_at'), function (Grid $grid) {
-			$grid->column('key',DcatConfigServiceProvider::trans('dcat-config.grid.key'))->display (function ($key){
-				return "config($key)";
-			})->copyable ();
-			
-			$grid->column('name',DcatConfigServiceProvider::trans('dcat-config.grid.name'));
-			
-			$grid->quickSearch (['key','name'])->placeholder (DcatConfigServiceProvider::trans('dcat-config.grid.key').DIRECTORY_SEPARATOR.DcatConfigServiceProvider::trans('dcat-config.grid.name'));
-			$grid->disableRefreshButton ();
-			$grid->disableViewButton ();
-			$grid->disableEditButton ();
-			$grid->disableCreateButton ();
-		});
+
+
+        $tab = collect(DcatConfigServiceProvider::setting('tab'))->pluck('value', 'key')->toArray();
+
+        $array = AdminConfig::query ()
+            ->orderByDesc ('created_at')
+            ->get(['key','name'])
+            ->toArray();
+
+        $data  = [];
+        foreach ($array as $item=>$v){
+
+            $key  =$tab[substr($v['key'], 0, strpos($v['key'],'.'))] ;
+
+            $data[$key][$item]['key'] = $v['key'];
+            $data[$key][$item]['name'] = $v['name'];
+        }
+	    return view('ghost.dcat-config::tree',['data'=>$data]);
 	}
 }

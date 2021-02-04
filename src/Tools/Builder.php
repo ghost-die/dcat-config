@@ -349,12 +349,19 @@ class Builder
         return explode("\n", str_replace("\r\n", "\n", $str));
     }
 
-    protected function trim($str)
+    /**
+     * @param $str
+     * @return string
+     */
+    protected function trim($str): string
     {
         return trim(strip_tags(str_replace(["\n", "\t", "\r", " ", "&nbsp;"], '', htmlspecialchars_decode($str))));
     }
 
-    public function update()
+    /**
+     * @return $this
+     */
+    public function update(): Builder
     {
         $request = \request()->except('_token');
         $i = 0;
