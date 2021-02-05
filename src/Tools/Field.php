@@ -28,7 +28,7 @@ class Field
      */
     public function rule(\Dcat\Admin\Form\Field $field, $rules)
     {
-        foreach ($rules as $rule){
+        foreach ((array)$rules as $rule){
 
             if ($rule === 'required')
             {
