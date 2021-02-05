@@ -66,10 +66,6 @@ class DcatConfigController extends Controller
     {
         Tooltip::make('.dd-toggle')
             ->top();
-
-        //Form::dialog('编辑')
-        //    ->click('.edit-form')
-        //    ->success('Dcat.reload()'); // 编辑成功后刷新页面
         return $content
             ->title($this->title())
             ->description($this->description())
@@ -152,12 +148,19 @@ class DcatConfigController extends Controller
     public function add(Content $content): Content
     {
 	    return $content
-		    ->title($this->title)
-		    ->description($this->description)
-		    ->breadcrumb(
-			    $this->breadcrumb()
-		    )
-		    ->body($this->create());
+            ->title($this->title())
+            ->description($this->description())
+            ->breadcrumb(
+                $this->breadcrumb()
+            )
+            ->body(
+                function (Row $row) {
+                    $row->column(8,$this->create());
+                    $row->column(4,$this->grid  ());
+                }
+            );
+
+		    //->body($this->create());
     }
 
     /**

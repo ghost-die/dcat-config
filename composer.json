@@ -3,7 +3,7 @@
     "description": "配置管理",
     "type": "library",
     "keywords": ["dcat-admin", "extension"],
-    "homepage": "https://github.com/ghost/dcat-config",
+    "homepage": "https://github.com/ghost-die/dcat-config",
     "license": "MIT",
     "authors": [
         {

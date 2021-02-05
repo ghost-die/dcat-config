@@ -11,8 +11,8 @@
                     <dl class="row">
                         <dt class="col-sm-4 text-right">{{$str['name']}} :</dt>
                         <dd class="col-sm-5">
-                            <span class="badge badge-secondary dd-toggle" data-title='config("{{$str['key']}}")'>
-                                {{\Illuminate\Support\Str::limit("config('".$str['key']."')",50)}}
+                            <span class="badge badge-secondary dd-toggle" data-title='{{$str['key']}}'>
+                                {{\Illuminate\Support\Str::limit("config('".$str['key']."')",25)}}
                             </span>
                         </dd>
                         <dd class="col-sm-3">

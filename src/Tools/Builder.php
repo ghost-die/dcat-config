@@ -50,6 +50,7 @@ class Builder
         //'markdown' => 'Markdown',
         'number' => '数字',
         'rate' => '费率',
+        'arrays'=>"数组"
     ];
 
     protected $input;
@@ -57,6 +58,13 @@ class Builder
     public function __construct($form, $model = null)
     {
         $this->form = $form;
+
+        $this->form->disableDeleteButton();
+        $this->form->disableViewButton();
+        $this->form->disableCreatingCheck();
+        $this->form->disableListButton();
+        $this->form->disableEditingCheck();
+        $this->form->disableViewCheck();
         $this->model = $model;
     }
 
@@ -65,19 +73,13 @@ class Builder
         $this->data = $this->model::query()->orderBy('order')->orderBy('created_at')->get()->each(function ($model) {
             [$key, $value] = explode('.', $model['key'], 2);
             $model['tab'] = $key;
-            $model['key'] = $value;
+            $model['key'] = preg_replace('/\./','-',$value);
 
             return $model;
         })->groupBy('tab');
 
         $this->form->title(DcatConfigServiceProvider::trans('dcat-config.builder.config'));
         $this->form->action(admin_url('config.do'));
-        $this->form->disableDeleteButton();
-        $this->form->disableViewButton();
-        $this->form->disableCreatingCheck();
-        $this->form->disableListButton();
-        $this->form->disableEditingCheck();
-        $this->form->disableViewCheck();
         $tab = collect($this->config('tab'))->pluck('value', 'key')->toArray();
         $this->data = $this->data->toArray();
         $this->data = collect(array_merge($tab, $this->data));
@@ -116,8 +118,7 @@ class Builder
     protected function text($model)
     {
 
-
-        $field = $this->form->text($model['tab'].'.'.$model['key'], $model['name']);
+        $field = $this->form->text($model['tab'].'-'.$model['key'], $model['name']);
 
         $field = $this->rule($field, $model['options']['rule']);
 
@@ -126,7 +127,7 @@ class Builder
 
     protected function select($model)
     {
-        $field = $this->form->select($model['tab'].'.'.$model['key'], $model['name'])->options($this->option($model));
+        $field = $this->form->select($model['tab'].'-'.$model['key'], $model['name'])->options($this->option($model));
         $field = $this->rule($field, $model['options']['rule']);
 
         return $field->help($model['help'], $model['help'] ? 'feather icon-help-circle' : '')->value($model['value']);
@@ -134,7 +135,7 @@ class Builder
 
     protected function multipleSelect($model)
     {
-        $field = $this->form->multipleSelect($model['tab'].'.'.$model['key'], $model['name'])->options($this->option($model));
+        $field = $this->form->multipleSelect($model['tab'].'-'.$model['key'], $model['name'])->options($this->option($model));
         $field = $this->rule($field, $model['options']['rule']);
 
         return $field->help($model['help'], $model['help'] ? 'feather icon-help-circle' : '')->value(json_decode($model['value']));
@@ -142,7 +143,7 @@ class Builder
 
     protected function listbox($model)
     {
-        $field = $this->form->listbox($model['tab'].'.'.$model['key'], $model['name'])->options($this->option($model));
+        $field = $this->form->listbox($model['tab'].'-'.$model['key'], $model['name'])->options($this->option($model));
         $field = $this->rule($field, $model['options']['rule']);
 
         return $field->help($model['help'], $model['help'] ? 'feather icon-help-circle' : '')->value(json_decode($model['value']));
@@ -150,7 +151,7 @@ class Builder
 
     protected function textarea($model)
     {
-        $field = $this->form->textarea($model['tab'].'.'.$model['key'], $model['name']);
+        $field = $this->form->textarea($model['tab'].'-'.$model['key'], $model['name']);
         $field = $this->rule($field, $model['options']['rule']);
 
         return $field->help($model['help'], $model['help'] ? 'feather icon-help-circle' : '')->value($model['value']);
@@ -158,7 +159,7 @@ class Builder
 
     protected function radio($model)
     {
-        $field = $this->form->radio($model['tab'].'.'.$model['key'], $model['name'])->options($this->option($model));
+        $field = $this->form->radio($model['tab'].'-'.$model['key'], $model['name'])->options($this->option($model));
         $field = $this->rule($field, $model['options']['rule']);
 
         return $field->help($model['help'], $model['help'] ? 'feather icon-help-circle' : '')->value($model['value']);
@@ -166,15 +167,17 @@ class Builder
 
     protected function checkbox($model)
     {
-        $field = $this->form->checkbox($model['tab'].'.'.$model['key'], $model['name'])->options($this->option($model));
+        $field = $this->form->checkbox($model['tab'].'-'.$model['key'], $model['name'])->options($this->option($model));
         $field = $this->rule($field, $model['options']['rule']);
 
         return $field->help($model['help'], $model['help'] ? 'feather icon-help-circle' : '')->value($model['value']);
     }
 
+
+
     protected function email($model)
     {
-        $field = $this->form->email($model['tab'].'.'.$model['key'], $model['name']);
+        $field = $this->form->email($model['tab'].'-'.$model['key'], $model['name']);
         $field = $this->rule($field, $model['options']['rule']);
 
         return $field->help($model['help'], $model['help'] ? 'feather icon-help-circle' : '')->value($model['value']);
@@ -182,7 +185,7 @@ class Builder
 
     protected function password($model)
     {
-        $field = $this->form->password($model['tab'].'.'.$model['key'], $model['name']);
+        $field = $this->form->password($model['tab'].'-'.$model['key'], $model['name']);
         $field = $this->rule($field, $model['options']['rule']);
 
         return $field->help($model['help'], $model['help'] ? 'feather icon-help-circle' : '')->value($model['value']);
@@ -190,7 +193,7 @@ class Builder
 
     protected function url($model)
     {
-        $field = $this->form->url($model['tab'].'.'.$model['key'], $model['name']);
+        $field = $this->form->url($model['tab'].'-'.$model['key'], $model['name']);
         $field = $this->rule($field, $model['options']['rule']);
 
         return $field->help($model['help'], $model['help'] ? 'feather icon-help-circle' : '')->value($model['value']);
@@ -198,7 +201,7 @@ class Builder
 
     protected function ip($model)
     {
-        $field = $this->form->ip($model['tab'].'.'.$model['key'], $model['name']);
+        $field = $this->form->ip($model['tab'].'-'.$model['key'], $model['name']);
         $field = $this->rule($field, $model['options']['rule']);
 
         return $field->help($model['help'], $model['help'] ? 'feather icon-help-circle' : '')->value($model['value']);
@@ -206,7 +209,7 @@ class Builder
 
     protected function mobile($model)
     {
-        $field = $this->form->mobile($model['tab'].'.'.$model['key'], $model['name']);
+        $field = $this->form->mobile($model['tab'].'-'.$model['key'], $model['name']);
         $field = $this->rule($field, $model['options']['rule']);
 
         return $field->help($model['help'], $model['help'] ? 'feather icon-help-circle' : '')->value($model['value']);
@@ -214,7 +217,7 @@ class Builder
 
     protected function color($model)
     {
-        $field = $this->form->color($model['tab'].'.'.$model['key'], $model['name']);
+        $field = $this->form->color($model['tab'].'-'.$model['key'], $model['name']);
         $field = $this->rule($field, $model['options']['rule']);
 
         return $field->help($model['help'], $model['help'] ? 'feather icon-help-circle' : '')->value($model['value']);
@@ -222,7 +225,7 @@ class Builder
 
     protected function time($model)
     {
-        $field = $this->form->time($model['tab'].'.'.$model['key'], $model['name']);
+        $field = $this->form->time($model['tab'].'-'.$model['key'], $model['name']);
         $field = $this->rule($field, $model['options']['rule']);
 
         return $field->help($model['help'], $model['help'] ? 'feather icon-help-circle' : '')->value($model['value']);
@@ -230,7 +233,7 @@ class Builder
 
     protected function date($model)
     {
-        $field = $this->form->date($model['tab'].'.'.$model['key'], $model['name']);
+        $field = $this->form->date($model['tab'].'-'.$model['key'], $model['name']);
         $field = $this->rule($field, $model['options']['rule']);
 
         return $field->help($model['help'], $model['help'] ? 'feather icon-help-circle' : '')->value($model['value']);
@@ -238,7 +241,7 @@ class Builder
 
     protected function datetime($model)
     {
-        $field = $this->form->datetime($model['tab'].'.'.$model['key'], $model['name']);
+        $field = $this->form->datetime($model['tab'].'-'.$model['key'], $model['name']);
         $field = $this->rule($field, $model['options']['rule']);
 
         return $field->help($model['help'], $model['help'] ? 'feather icon-help-circle' : '')->value($model['value']);
@@ -246,7 +249,7 @@ class Builder
 
     protected function file($model)
     {
-        $field = $this->form->file($model['tab'].'.'.$model['key'], $model['name'])->autoUpload()->url(admin_url('files'));
+        $field = $this->form->file($model['tab'].'-'.$model['key'], $model['name'])->autoUpload()->url(admin_url('files'));
         $field = $this->rule($field, $model['options']['rule']);
 
         return $field->help($model['help'], $model['help'] ? 'feather icon-help-circle' : '')->value($model['value']);
@@ -254,7 +257,7 @@ class Builder
 
     protected function image($model)
     {
-        $field = $this->form->image($model['tab'].'.'.$model['key'], $model['name'])->autoUpload()->url(admin_url('files'));
+        $field = $this->form->image($model['tab'].'-'.$model['key'], $model['name'])->autoUpload()->url(admin_url('files'));
         $field = $this->rule($field, $model['options']['rule']);
 
         return $field->help($model['help'], $model['help'] ? 'feather icon-help-circle' : '')->value($model['value']);
@@ -262,7 +265,7 @@ class Builder
 
     protected function multipleFile($model)
     {
-        $field = $this->form->multipleFile($model['tab'].'.'.$model['key'], $model['name'])->autoUpload()->url(admin_url('files'));
+        $field = $this->form->multipleFile($model['tab'].'-'.$model['key'], $model['name'])->autoUpload()->url(admin_url('files'));
 
         $field = $this->rule($field, $model['options']['rule']);
 
@@ -271,7 +274,7 @@ class Builder
 
     protected function multipleImage($model)
     {
-        $field = $this->form->multipleImage($model['tab'].'.'.$model['key'], $model['name'])->autoUpload()->url(admin_url('files'));
+        $field = $this->form->multipleImage($model['tab'].'-'.$model['key'], $model['name'])->autoUpload()->url(admin_url('files'));
         $field = $this->rule($field, $model['options']['rule']);
 
         return $field->help($model['help'], $model['help'] ? 'feather icon-help-circle' : '')->value($model['value']);
@@ -279,7 +282,7 @@ class Builder
 
     protected function editor($model)
     {
-        $field = $this->form->editor($model['tab'].'.'.$model['key'], $model['name']);
+        $field = $this->form->editor($model['tab'].'-'.$model['key'], $model['name']);
         $field = $this->rule($field, $model['options']['rule']);
 
         return $field->help($model['help'], $model['help'] ? 'feather icon-help-circle' : '')->value($model['value']);
@@ -295,7 +298,7 @@ class Builder
 
     protected function map($model)
     {
-        $field = $this->form->map($model['tab'].'.'.$model['key'], $model['name']);
+        $field = $this->form->map($model['tab'].'-'.$model['key'], $model['name']);
         $field = $this->rule($field, $model['options']['rule']);
 
         return $field->help($model['help'], $model['help'] ? 'feather icon-help-circle' : '')->value($model['value']);
@@ -303,7 +306,7 @@ class Builder
 
     protected function number($model)
     {
-        $field = $this->form->number($model['tab'].'.'.$model['key'], $model['name']);
+        $field = $this->form->number($model['tab'].'-'.$model['key'], $model['name']);
         $field = $this->rule($field, $model['options']['rule']);
 
         return $field->help($model['help'], $model['help'] ? 'feather icon-help-circle' : '')->value($model['value']);
@@ -311,7 +314,7 @@ class Builder
 
     protected function rate($model)
     {
-        $field = $this->form->rate($model['tab'].'.'.$model['key'], $model['name']);
+        $field = $this->form->rate($model['tab'].'-'.$model['key'], $model['name']);
         $field = $this->rule($field, $model['options']['rule']);
 
         return $field->help($model['help'], $model['help'] ? 'feather icon-help-circle' : '')->value($model['value']);
@@ -319,11 +322,22 @@ class Builder
 
     protected function tags($model)
     {
-        $field = $this->form->tags($model['tab'].'.'.$model['key'], $model['name'])->options($this->option($model));
+        $field = $this->form->tags($model['tab'].'-'.$model['key'], $model['name'])->options($this->option($model));
         $field = $this->rule($field, $model['options']['rule']);
 
         return $field->help($model['help'], $model['help'] ? 'feather icon-help-circle' : '')->value($model['value']);
     }
+
+    protected function arrays($model)
+    {
+        $field = $this->form->array($model['tab'].'-'.$model['key'], $model['name'],function ($form){
+            $form->text('key');
+            $form->text('value');
+        });
+        $field = $this->rule($field, $model['options']['rule']);
+        return $field->help($model['help'], $model['help'] ? 'feather icon-help-circle' : '')->value($model['value']);
+    }
+
 
     public function option($model)
     {
@@ -411,31 +425,47 @@ class Builder
         $request = \request()->except('_token');
         $i = 0;
 
-        $res = Arr::dot($request);
+
+        //dd($request);
+        //$res = Arr::dot($request);
+
 
         $data = [];
-        foreach ($res as $k => $v) {
-
-            $str = strrchr($k, '.');
-            $key = substr($k, 0, strlen($k) - strlen($str));
-            if (is_numeric(str_replace('.', '', $str))) {
-                $data[$key][] = $v;
-            } else {
-                $data[$k] = $v;
-            }
-        }
+        //foreach ($request as $k => $v) {
+        //
+        //    $str = strrchr($k, '.');
+        //    $key = substr($k, 0, strlen($k) - strlen($str));
+        //    if (is_numeric(str_replace('.', '', $str))) {
+        //        $data[$key][] = $v;
+        //    } else {
+        //        $data[$k] = $v;
+        //    }
+        //}
 
         $update = [];
-        foreach ($data as $key => $value) {
+        foreach ($request as $key => $value) {
 
-            $update[$i]['key'] = $key;
+            $update[$i]['key'] = str_replace("-", '.', $key);
             if (is_array($value)) {
-                $update[$i]['value'] = collect($value)->filter()->toJson();
+
+                $update[$i]['value'] = collect($value)->map(function ($v){
+
+                    if (isset($v['_remove_'])){
+                        if ((int)$v['_remove_'] ===1){
+                            return 0;
+                        }
+                        unset($v['_remove_']);
+                    }
+                    return $v;
+
+
+                })->filter()->values()->toJson();
             } else {
                 $update[$i]['value'] = $value;
             }
             $i++;
         }
+
         $this->model->batchUpdate($update);
 
         Artisan::call('config:clear');
@@ -494,12 +524,13 @@ class Builder
         $rules = [];
         $message = [];
         foreach ($data as $key => $val) {
-            $rules[$key.'.key'] = 'required|unique:admin_config,key';
+            $rules[$key.'.key'] = 'required|unique:admin_config,key|regex:/^[a-zA-Z_\.0-9]+$/';
             $rules[$key.'.name'] = 'required';
             $rules[$key.'.element'] = 'required';
 
             $message[$key.'.key.required'] = ':attribute 不能为空';
             $message[$key.'.key.unique'] = ':attribute 已存在';
+            $message[$key.'.key.regex'] = ':attribute 只能包含字母数字';
 
             $message[$key.'.key.name'] = ':attribute 不能为空';
             $message[$key.'.key.element'] = ':attribute 不能为空';
@@ -522,7 +553,6 @@ class Builder
         $tab = collect($this->config('tab'))->pluck('value', 'key');
 
         $this->form->edit($id);
-        //$this->form->action()
         $this->form->select('tab', DcatConfigServiceProvider::trans('dcat-config.builder.groups'))
             ->options($tab)
             ->customFormat(function (){
@@ -570,15 +600,6 @@ class Builder
         });
         $this->form->text('help', DcatConfigServiceProvider::trans('dcat-config.builder.help'));
 
-        $this->form->disableListButton();
-        $this->form->disableViewButton();
-        $this->form->disableViewCheck();
-        $this->form->disableEditingCheck();
-
-        $this->form->disableDeleteButton();
-
-
-
         return $this;
     }
 
@@ -592,19 +613,15 @@ class Builder
      */
     public function create()
     {
-        $this->form->disableDeleteButton();
-        $this->form->disableViewButton();
-        $this->form->disableCreatingCheck();
-        $this->form->disableListButton();
-        $this->form->disableEditingCheck();
-        $this->form->disableViewCheck();
+
         $tab = collect($this->config('tab'))->pluck('value', 'key');
         $this->form->action(admin_url('config/addo'));
         $this->form->select('tab', DcatConfigServiceProvider::trans('dcat-config.builder.groups'))->options($tab)->default($tab->keys()->first());
         $this->form->array('attribute', DcatConfigServiceProvider::trans('dcat-config.builder.attribute'), function (
             WidgetsForm $form
         ) {
-            $form->text('key', DcatConfigServiceProvider::trans('dcat-config.builder.key'))->required();
+            $form->text('key', DcatConfigServiceProvider::trans('dcat-config.builder.key'))
+                ->required()->help('请输入字母/数字/点/下划线');
             $form->text('name', DcatConfigServiceProvider::trans('dcat-config.builder.name'))->required();
             $form->select('element', DcatConfigServiceProvider::trans('dcat-config.builder.element'))->required()->when([
                 'select',
@@ -612,10 +629,10 @@ class Builder
                 'listbox',
                 'radio',
                 'checkbox',
-            ], function (\Dcat\Admin\Widgets\Form $form) {
+            ], function (WidgetsForm $form) {
                 $form->textarea('option', DcatConfigServiceProvider::trans('dcat-config.builder.option'))->placeholder("例如:\r\nkey1:value1\r\nkey2:value2");
             })->options($this->option)->default('text');
-            $form->textarea('rule', DcatConfigServiceProvider::trans('dcat-config.builder.rule'));
+            $form->textarea('rule', DcatConfigServiceProvider::trans('dcat-config.builder.rule'))->placeholder("例如:\r\nrequired\r\n");
             $form->text('help', DcatConfigServiceProvider::trans('dcat-config.builder.help'));
         });
 
