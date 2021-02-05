@@ -7,9 +7,7 @@ use Dcat\Admin\Form;
 use Dcat\Admin\Layout\Content;
 use Dcat\Admin\Widgets\Tooltip;
 use Ghost\DcatConfig\DcatConfigServiceProvider;
-use Ghost\DcatConfig\Models\AdminConfig;
 use Ghost\DcatConfig\Tools\Builder;
-use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Dcat\Admin\Layout\Row;
 
@@ -64,6 +62,7 @@ class DcatConfigController extends Controller
      */
 	public function index(Content $content): Content
     {
+
         Tooltip::make('.dd-toggle')
             ->top();
         return $content
@@ -82,7 +81,7 @@ class DcatConfigController extends Controller
 
     public function edit($id, Content $content)
     {
-        $form = (new Builder(Form::make(new AdminConfig())))->edit ($id)->getForm ();
+        $form = (new Builder(Form::make()))->edit ($id)->getForm ();
         return $content
             ->title($this->title())
             ->description($this->description())
@@ -100,9 +99,8 @@ class DcatConfigController extends Controller
     public function putEdit($id)
     {
 
-        $configModel= new AdminConfig();
         $form = Form::make();
-        return (new Builder($form,$configModel))->putEdit($id)->getForm ()
+        return (new Builder($form))->putEdit($id)->getForm ()
             ->response()
             ->redirect(admin_url('config'))
             ->success(trans('admin.save_succeeded'));
@@ -117,10 +115,8 @@ class DcatConfigController extends Controller
      */
 	public function destroy($id){
 
-
-        $configModel= new AdminConfig();
         $form = Form::make();
-        return (new Builder($form,$configModel))->destroy ($id)->getForm ()
+        return (new Builder($form))->destroy ($id)->getForm ()
             ->response()
             ->refresh()
             ->success(trans('admin.delete_succeeded'));
@@ -131,10 +127,8 @@ class DcatConfigController extends Controller
      */
 	public function update(): \Dcat\Admin\Http\JsonResponse
     {
-
-		$configModel= new AdminConfig();
 		$form = Form::make();
-		return (new Builder($form,$configModel))->update ()->getForm ()
+		return (new Builder($form))->update ()->getForm ()
 			->response()
 			->refresh()
 			->success(trans('admin.save_succeeded'));
@@ -168,7 +162,7 @@ class DcatConfigController extends Controller
      */
     public function addo(): \Dcat\Admin\Http\JsonResponse
     {
-	    return (new Builder(Form::make(),new AdminConfig()))->store ()->getForm ()
+	    return (new Builder(Form::make()))->store ()->getForm ()
 		    ->response()
 		    ->redirect(admin_url ('config'))
 		    ->success(trans('admin.save_succeeded'));
@@ -179,9 +173,8 @@ class DcatConfigController extends Controller
      */
 	protected function form(): ?Form
     {
-		$configModel= new AdminConfig();
 		$form = Form::make();
-		return (new Builder($form,$configModel))->form ()->getForm ();
+		return (new Builder($form))->form ()->getForm ();
 	}
 
     /**
@@ -201,10 +194,10 @@ class DcatConfigController extends Controller
 
         $tab = collect(DcatConfigServiceProvider::setting('tab'))->pluck('value', 'key')->toArray();
 
-        $array = AdminConfig::query ()
-            ->orderByDesc ('created_at')
-            ->get(['key','name'])
-            ->toArray();
+        $array = collect(admin_setting_array('ghost::admin_config'))->map(function ($value){
+
+            return ['key'=>$value['key'],'name'=>$value['name']];
+        })->toArray();
 
         $data  = [];
         foreach ($array as $item=>$v){

@@ -2,7 +2,7 @@
 
 ### dcat config 配置
 
-> 添加admin_config 表
+> admin_setting 添加 ghost::admin_config 字段
 
 > key=>value形式保存
 
@@ -35,4 +35,5 @@
 	'editor' => '富文本编辑器',
 	'number' => '数字',
 	'rate' => '费率',
+	'array'=>'数组'
     ```

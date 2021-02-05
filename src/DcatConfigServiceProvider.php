@@ -31,12 +31,17 @@ class DcatConfigServiceProvider extends ServiceProvider
 	public function load()
 	{
 
-		foreach (AdminConfig::all(['key', 'value']) as $config) {
-            $value = json_decode ( $config[ 'value' ] , true  );
-            if(json_last_error() !== JSON_ERROR_NONE){
-                $value =  $config['value'];
-            }
-            config([$config['key'] => $value]);
+        $array = collect(admin_setting_array('ghost::admin_config'))->map(function ($value){
+
+            return ['key'=>$value['key'],'value'=>$value['value']];
+        })->toArray();
+
+		foreach ($array as $config) {
+            //$value = json_decode ( $config[ 'value' ] , true  );
+            //if(json_last_error() !== JSON_ERROR_NONE){
+            //    $value =  $config['value'];
+            //}
+            config([$config['key'] => $config['value']]);
 		}
 	}
 	
