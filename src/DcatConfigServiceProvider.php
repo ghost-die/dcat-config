@@ -23,9 +23,7 @@ class DcatConfigServiceProvider extends ServiceProvider
 	public function init()
 	{
 		parent::init();
-		if (Schema::hasTable('admin_config')) {
-			$this->load();
-		}
+        $this->load();
 	}
 	
 	public function load()
@@ -36,11 +34,8 @@ class DcatConfigServiceProvider extends ServiceProvider
             return ['key'=>$value['key'],'value'=>$value['value']];
         })->toArray();
 
+        //dd($array);
 		foreach ($array as $config) {
-            //$value = json_decode ( $config[ 'value' ] , true  );
-            //if(json_last_error() !== JSON_ERROR_NONE){
-            //    $value =  $config['value'];
-            //}
             config([$config['key'] => $config['value']]);
 		}
 	}

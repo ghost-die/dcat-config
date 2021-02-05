@@ -275,12 +275,21 @@ class Builder
         $rules = [];
         $message = [];
         foreach ($data as $key => $val) {
-            $rules[$key.'.key'] = 'required|unique:admin_config,key|regex:/^[a-zA-Z_\.0-9]+$/';
+            $rules[$key.'.key'] = [
+                'required',
+                'regex:/^[a-zA-Z_\.0-9]+$/',
+                function($attribute, $value, $fail){
+                    $res = $this->all()->where('key',$value)->first();
+
+                    if ($res){
+                        return $fail(DcatConfigServiceProvider::trans('dcat-config.builder.key').' 已存在');
+                    }
+                }
+            ];
             $rules[$key.'.name'] = 'required';
             $rules[$key.'.element'] = 'required';
 
             $message[$key.'.key.required'] = DcatConfigServiceProvider::trans('dcat-config.builder.key').' 不能为空';
-            $message[$key.'.key.unique'] = DcatConfigServiceProvider::trans('dcat-config.builder.key').' 已存在';
             $message[$key.'.key.regex'] = DcatConfigServiceProvider::trans('dcat-config.builder.key').' 只能包含字母数字';
 
             $message[$key.'.name.required'] = DcatConfigServiceProvider::trans('dcat-config.builder.name').' 不能为空';
