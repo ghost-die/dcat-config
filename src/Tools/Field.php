@@ -2,33 +2,48 @@
 
 namespace Ghost\DcatConfig\Tools;
 
+use Illuminate\Support\Str;
+
 class Field
 {
     protected $model;
 
     protected $form;
-    public function __construct($model,$form)
+
+    public function __construct($model, $form)
     {
         $this->model = $model;
         $this->form = $form;
-
     }
 
-    public static function make($model,$form)
+    public static function make($model, $form)
     {
-        return new self($model,$form);
+        return new self($model, $form);
     }
+
     /**
      * @param \Dcat\Admin\Form\Field $field
      * @param $rule
      * @return \Dcat\Admin\Form\Field
      */
-    public function rule(\Dcat\Admin\Form\Field $field, $rule)
+    public function rule(\Dcat\Admin\Form\Field $field, $rules)
     {
-        if ($rule && in_array('required', $rule, true)) {
-            $field->required();
-        }
+        foreach ($rules as $rule){
 
+            if ($rule === 'required')
+            {
+                $field->required();
+            }
+            if (Str::contains($rule,'min:')){
+                [$r,$num] = explode(':',$rule);
+                $field->minLength($num);
+            }
+
+            if (Str::contains($rule,'max:')){
+                [$r,$num] = explode(':',$rule);
+                $field->maxLength($num);
+            }
+        }
         return $field;
     }
 
@@ -90,8 +105,6 @@ class Field
 
         return $field->help($this->model['help'], $this->model['help'] ? 'feather icon-help-circle' : '')->value($this->model['value']);
     }
-
-
 
     public function email()
     {
@@ -248,16 +261,15 @@ class Field
 
     public function arrays()
     {
-        $field = $this->form->array($this->model['tab'].'-'.$this->model['key'], $this->model['name'],function ($form){
+        $field = $this->form->array($this->model['tab'].'-'.$this->model['key'], $this->model['name'], function ($form
+        ) {
             $form->text('key');
             $form->text('value');
         });
         $field = $this->rule($field, $this->model['options']['rule']);
+
         return $field->help($this->model['help'], $this->model['help'] ? 'feather icon-help-circle' : '')->value($this->model['value']);
     }
-
-
-
 
     public function option()
     {

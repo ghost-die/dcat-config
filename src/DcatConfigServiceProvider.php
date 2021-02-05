@@ -9,39 +9,34 @@ use Illuminate\Support\Facades\Schema;
 
 class DcatConfigServiceProvider extends ServiceProvider
 {
-	
-	
-	// 定义菜单
-	protected $menu = [
-		[
-			'title' => 'Config',
-			'uri'   => 'config',
-			'icon'  => 'fa-toggle-off', // 图标可以留空
-		],
-	];
+    // 定义菜单
+    protected $menu = [
+        [
+            'title' => 'Config',
+            'uri' => 'config',
+            'icon' => 'fa-toggle-off', // 图标可以留空
+        ],
+    ];
 
-	public function init()
-	{
-		parent::init();
+    public function init()
+    {
+        parent::init();
         $this->load();
-	}
-	
-	public function load()
-	{
+    }
 
-        $array = collect(admin_setting_array('ghost::admin_config'))->map(function ($value){
+    public function load()
+    {
 
-            return ['key'=>$value['key'],'value'=>$value['value']];
+        $array = collect(admin_setting_array('ghost::admin_config'))->map(function ($value) {
+            return ['key' => $value['key'], 'value' => $value['value']];
         })->toArray();
-
-        //dd($array);
-		foreach ($array as $config) {
+        foreach ($array as $config) {
             config([$config['key'] => $config['value']]);
-		}
-	}
-	
-	public function settingForm()
-	{
-		return new Setting($this);
-	}
+        }
+    }
+
+    public function settingForm()
+    {
+        return new Setting($this);
+    }
 }

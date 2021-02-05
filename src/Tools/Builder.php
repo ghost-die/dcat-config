@@ -47,7 +47,7 @@ class Builder
         //'markdown' => 'Markdown',
         'number' => '数字',
         'rate' => '费率',
-        'arrays'=>"数组"
+        'arrays' => "数组",
     ];
 
     protected $input;
@@ -73,6 +73,7 @@ class Builder
             [$key, $value] = explode('.', $model['key'], 2);
             $model['tab'] = $key;
             $model['key'] = str_replace(".", '-', $value);
+
             return $model;
         })->groupBy('tab');
 
@@ -86,7 +87,7 @@ class Builder
             $this->form->tab($tab[$item], function () use ($value, $item) {
                 if (is_array($value)) {
                     collect($value)->each(function ($model) {
-                        Field::make($model,$this->form)->{$model['element']}();
+                        Field::make($model, $this->form)->{$model['element']}();
                     });
                 }
             });
@@ -97,15 +98,6 @@ class Builder
         return $this;
     }
 
-
-    ///**
-    // * @return mixed
-    // */
-    //public function getInput()
-    //{
-    //    return $this->input;
-    //}
-
     /**
      * @param $str
      *
@@ -115,15 +107,6 @@ class Builder
     {
         return explode("\n", str_replace("\r\n", "\n", $str));
     }
-
-    /**
-     * @param $str
-     * @return string
-     */
-    //protected function trim($str): string
-    //{
-    //    return trim(strip_tags(str_replace(["\n", "\t", "\r", " ", "&nbsp;"], '', htmlspecialchars_decode($str))));
-    //}
 
     /**
      * @param $id
@@ -153,34 +136,35 @@ class Builder
         }
 
         $options = [
-            'rule'=>$rule,
-            'option'=>$option,
+            'rule' => $rule,
+            'option' => $option,
         ];
 
         $data = [
 
-            'key'=>$id,
+            'key' => $id,
             'value' => null,
             'name' => $request->get('name'),
             'help' => $request->get('help'),
             'element' => $request->get('element'),
-            'options' => $options
+            'options' => $options,
         ];
 
-        $this->model = $this->model->map(function ($value)use ($data){
+        $this->model = $this->model->map(function ($value) use ($data) {
 
-            if ($value['key']===$data['key']){
+            if ($value['key'] === $data['key']) {
                 $value['value'] = '';
                 $value['name'] = $data['name'];
                 $value['help'] = $data['help'];
                 $value['element'] = $data['element'];
                 $value['options'] = $data['options'];
             }
+
             return $value;
         });
         $this->save();
-        return $this;
 
+        return $this;
     }
 
     /**
@@ -196,17 +180,17 @@ class Builder
             $update[$i]['key'] = str_replace("-", '.', $key);
             if (is_array($value)) {
 
-                $update[$i]['value'] = collect($value)->map(function ($v){
+                $update[$i]['value'] = collect($value)->map(function ($v) {
 
-                    if (isset($v['_remove_'])){
-                        if ((int)$v['_remove_'] ===1){
+                    if (isset($v['_remove_'])) {
+                        if ((int) $v['_remove_'] === 1) {
                             return 0;
                         }
                         unset($v['_remove_']);
                     }
-                    return $v;
 
-                })->filter(function ($v){
+                    return $v;
+                })->filter(function ($v) {
                     return $v !== null;
                 })->values();
             } else {
@@ -214,14 +198,15 @@ class Builder
             }
             $i++;
         }
-        $update = collect($update)->pluck('value','key');
-        $this->model  = $this->model->map(function ($value)use ($update){
+        $update = collect($update)->pluck('value', 'key');
+        $this->model = $this->model->map(function ($value) use ($update) {
             $value['value'] = $update[$value['key']];
+
             return $value;
         });
 
         $this->save();
-        Artisan::call('config:clear');
+        Artisan::call('config:cache');
 
         return $this;
     }
@@ -234,7 +219,6 @@ class Builder
     {
         $tab = request()->get('tab');
         $attribute = request()->get('attribute');
-
 
         $attribute = collect($attribute)->map(function ($data) {
 
@@ -266,8 +250,8 @@ class Builder
                 $data[$item]['help'] = $value['help'];
                 $data[$item]['element'] = $value['element'];
                 $data[$item]['options'] = [
-                    'option' => $value['option']??[],
-                    'rule' => $value['rule']??[],
+                    'option' => $value['option'] ?? [],
+                    'rule' => $value['rule'] ?? [],
                 ];
                 $data[$item]['order'] = $this->order() + $item + 1;
             }
@@ -278,13 +262,13 @@ class Builder
             $rules[$key.'.key'] = [
                 'required',
                 'regex:/^[a-zA-Z_\.0-9]+$/',
-                function($attribute, $value, $fail){
-                    $res = $this->all()->where('key',$value)->first();
+                function ($attribute, $value, $fail) {
+                    $res = $this->all()->where('key', $value)->first();
 
-                    if ($res){
+                    if ($res) {
                         return $fail(DcatConfigServiceProvider::trans('dcat-config.builder.key').' 已存在');
                     }
-                }
+                },
             ];
             $rules[$key.'.name'] = 'required';
             $rules[$key.'.element'] = 'required';
@@ -299,6 +283,7 @@ class Builder
         Validator::make($data, $rules, $message)->validate();
         $this->model = $this->model->merge($data);
         $this->save();
+
         return $this;
     }
 
@@ -308,61 +293,50 @@ class Builder
      */
     public function edit($id)
     {
-
         $tab = collect($this->config('tab'))->pluck('value', 'key');
-
-        $this->model = $this->model->where('key',$id)->first();
-
-        if (null === $this->model){
+        $this->model = $this->model->where('key', $id)->first();
+        if (null === $this->model) {
             return $this;
         }
-
         $this->form->hidden('_method')->value('put');
-        //$this->form->edit($id);
-        $this->form->select('tab', DcatConfigServiceProvider::trans('dcat-config.builder.groups'))
-            ->options($tab)
-            ->value(function (){
-               return substr($this->model['key'], 0, strpos($this->model['key'],'.'));
-            })
-            ->disable()
-            ->default($tab->keys()->first());
+        $this->form->select('tab', DcatConfigServiceProvider::trans('dcat-config.builder.groups'))->options($tab)->value(function (
+        ) {
+            return substr($this->model['key'], 0, strpos($this->model['key'], '.'));
+        })->disable()->default($tab->keys()->first());
 
-        $this->form->text('key', DcatConfigServiceProvider::trans('dcat-config.builder.key'))
-            ->required()
-            ->value(substr($this->model['key'],strrpos($this->model['key'],".")+1))
-            ->disable();
-        $this->form->text('name', DcatConfigServiceProvider::trans('dcat-config.builder.name'))
-            ->required()->value($this->model['name']);
-        $this->form->select('element', DcatConfigServiceProvider::trans('dcat-config.builder.element'))->required()->when([
+        $this->form->text('key', DcatConfigServiceProvider::trans('dcat-config.builder.key'))->required()->value(substr($this->model['key'], strrpos($this->model['key'], ".") + 1))->disable();
+        $this->form->text('name', DcatConfigServiceProvider::trans('dcat-config.builder.name'))->required()->value($this->model['name']);
+        $this->form->radio('element', DcatConfigServiceProvider::trans('dcat-config.builder.element'))->required()->when([
             'select',
             'multipleSelect',
             'listbox',
             'radio',
             'checkbox',
-        ], function ( $form) {
-            $form->textarea('option', DcatConfigServiceProvider::trans('dcat-config.builder.option'))
-                ->value(function (){
+        ], function ($form) {
+            $form->textarea('option', DcatConfigServiceProvider::trans('dcat-config.builder.option'))->value(function (
+            ) {
 
-                    $d= collect($this->model['options']['option'])->pluck('value','key')->toArray();
+                $d = collect($this->model['options']['option'])->pluck('value', 'key')->toArray();
 
-                    $text = '';
-                    foreach ($d as $k=>$v){
+                $text = '';
+                foreach ($d as $k => $v) {
 
-                        $text .= $k.':'.$v."\r\n";
-                    }
-                    return $text;
-                })
-                ->placeholder("例如:\r\nkey1:value1\r\nkey2:value2");
+                    $text .= $k.':'.$v."\r\n";
+                }
+
+                return $text;
+            })->placeholder("例如:\r\nkey1:value1\r\nkey2:value2");
         })->options($this->option)->value($this->model['element'])->default('text');
-        $this->form->textarea('rule', DcatConfigServiceProvider::trans('dcat-config.builder.rule'))->customFormat(function (){
+        $this->form->textarea('rule', DcatConfigServiceProvider::trans('dcat-config.builder.rule'))->value(function (
+        ) {
 
 
             $d = $this->model['options']['rule'];
             $text = '';
-            foreach ((array)$d as $k=>$v){
-
+            foreach ((array) $d as $k => $v) {
                 $text .= $v."\r\n";
             }
+
             return $text;
         });
         $this->form->text('help', DcatConfigServiceProvider::trans('dcat-config.builder.help'));
@@ -373,7 +347,8 @@ class Builder
     protected function order()
     {
         $res = collect($this->model)->last();
-        return $res?$res['order']:0;
+
+        return $res ? $res['order'] : 0;
     }
 
     /**
@@ -388,8 +363,7 @@ class Builder
         $this->form->array('attribute', DcatConfigServiceProvider::trans('dcat-config.builder.attribute'), function (
             WidgetsForm $form
         ) {
-            $form->text('key', DcatConfigServiceProvider::trans('dcat-config.builder.key'))
-                ->required()->help('请输入字母/数字/点/下划线');
+            $form->text('key', DcatConfigServiceProvider::trans('dcat-config.builder.key'))->required()->help('请输入字母/数字/点/下划线');
             $form->text('name', DcatConfigServiceProvider::trans('dcat-config.builder.name'))->required();
             $form->select('element', DcatConfigServiceProvider::trans('dcat-config.builder.element'))->required()->when([
                 'select',
@@ -400,7 +374,7 @@ class Builder
             ], function (WidgetsForm $form) {
                 $form->textarea('option', DcatConfigServiceProvider::trans('dcat-config.builder.option'))->placeholder("例如:\r\nkey1:value1\r\nkey2:value2");
             })->options($this->option)->default('text');
-            $form->textarea('rule', DcatConfigServiceProvider::trans('dcat-config.builder.rule'))->placeholder("例如:\r\nrequired\r\n");
+            $form->textarea('rule', DcatConfigServiceProvider::trans('dcat-config.builder.rule'))->placeholder("例如:\r\nrequired\r\nmax:1\r\nmin:1\r\n");
             $form->text('help', DcatConfigServiceProvider::trans('dcat-config.builder.help'));
         });
 
@@ -413,14 +387,16 @@ class Builder
      */
     public function destroy($id)
     {
-        $this->model = $this->model->map(function ($value) use ($id){
-            if ($value['key'] === $id){
+        $this->model = $this->model->map(function ($value) use ($id) {
+            if ($value['key'] === $id) {
                 return [];
             }
+
             return $value;
         })->filter();
 
         $this->save();
+
         return $this;
     }
 
@@ -442,7 +418,6 @@ class Builder
         return DcatConfigServiceProvider::setting($key, $default);
     }
 
-
     /**
      * @return \Illuminate\Support\Collection
      */
@@ -456,6 +431,6 @@ class Builder
      */
     public function save()
     {
-        return admin_setting(["ghost::admin_config"=>$this->model]);
+        return admin_setting(["ghost::admin_config" => $this->model]);
     }
 }
