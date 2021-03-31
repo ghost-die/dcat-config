@@ -1,5 +1,12 @@
 # Dcat Admin Extension
 
+![](https://ghost-ai.com/images/original/file/16171727904222427.png "")
+![](https://ghost-ai.com/images/original/file/1617172863498956751.png "")
+
+### composer 安装
+
+> composer require ghost/dcat-config
+
 ### dcat config 配置
 
 > admin_setting 添加 ghost::admin_config 字段
