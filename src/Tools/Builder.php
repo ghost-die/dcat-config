@@ -2,6 +2,7 @@
 
 namespace Ghost\DcatConfig\Tools;
 
+use Dcat\Admin\Actions\Action;
 use Dcat\Admin\Form;
 use Dcat\Admin\Widgets\Form as WidgetsForm;
 use Ghost\DcatConfig\DcatConfigServiceProvider;
@@ -222,6 +223,7 @@ class Builder
 
         $attribute = collect($attribute)->map(function ($data) {
 
+
             if ($data['option']) {
                 $data['option'] = collect($this->textToArray($data['option']))->map(function ($value, $k) {
                     if (false === strpos($value, ':')) {
@@ -240,10 +242,11 @@ class Builder
 
             return $data;
         })->values();
+
         $data = [];
         $attribute->each(function ($value, $item) use (&$data, $tab) {
 
-            if (null !== $value['key']) {
+            if (null !== $value['key'] &&  1 !== (int)$value['_remove_']) {
                 $data[$item]['key'] = $tab.'.'.$value['key'];
                 $data[$item]['name'] = $value['name'];
                 $data[$item]['value'] = '';
@@ -256,6 +259,7 @@ class Builder
                 $data[$item]['order'] = $this->order() + $item + 1;
             }
         });
+
         $rules = [];
         $message = [];
         foreach ($data as $key => $val) {
@@ -339,7 +343,7 @@ class Builder
 
             return $text;
         });
-        $this->form->text('help', DcatConfigServiceProvider::trans('dcat-config.builder.help'));
+        $this->form->text('help', DcatConfigServiceProvider::trans('dcat-config.builder.help'))->value($this->model['name']);
 
         return $this;
     }
@@ -359,13 +363,13 @@ class Builder
 
         $tab = collect($this->config('tab'))->pluck('value', 'key');
         $this->form->action(admin_url('config/addo'));
-        $this->form->select('tab', DcatConfigServiceProvider::trans('dcat-config.builder.groups'))->options($tab)->default($tab->keys()->first());
+        $this->form->radio('tab', DcatConfigServiceProvider::trans('dcat-config.builder.groups'))->options($tab)->default($tab->keys()->first());
         $this->form->array('attribute', DcatConfigServiceProvider::trans('dcat-config.builder.attribute'), function (
             WidgetsForm $form
         ) {
             $form->text('key', DcatConfigServiceProvider::trans('dcat-config.builder.key'))->required()->help('请输入字母/数字/点/下划线');
             $form->text('name', DcatConfigServiceProvider::trans('dcat-config.builder.name'))->required();
-            $form->select('element', DcatConfigServiceProvider::trans('dcat-config.builder.element'))->required()->when([
+            $form->radio('element', DcatConfigServiceProvider::trans('dcat-config.builder.element'))->required()->when([
                 'select',
                 'multipleSelect',
                 'listbox',
