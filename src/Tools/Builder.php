@@ -343,7 +343,7 @@ class Builder
 
             return $text;
         });
-        $this->form->text('help', DcatConfigServiceProvider::trans('dcat-config.builder.help'))->value($this->model['name']);
+        $this->form->text('help', DcatConfigServiceProvider::trans('dcat-config.builder.help'))->value($this->model['help']);
 
         return $this;
     }
