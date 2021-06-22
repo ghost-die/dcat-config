@@ -64,7 +64,8 @@ class DcatConfigController extends Controller
 
         Tooltip::make('.dd-toggle')->top();
 
-        return $content->title($this->title())->description($this->description())->breadcrumb($this->breadcrumb())->body(function (
+        return $content->title($this->title())
+            ->description($this->description())->breadcrumb($this->breadcrumb())->body(function (
             Row $row
         ) {
             $row->column(8, $this->form());

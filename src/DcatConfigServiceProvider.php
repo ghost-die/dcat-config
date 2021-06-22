@@ -3,9 +3,7 @@
 namespace Ghost\DcatConfig;
 
 use Dcat\Admin\Extend\ServiceProvider;
-use Dcat\Admin\Admin;
-use Ghost\DcatConfig\Models\AdminConfig;
-use Illuminate\Support\Facades\Schema;
+
 
 class DcatConfigServiceProvider extends ServiceProvider
 {

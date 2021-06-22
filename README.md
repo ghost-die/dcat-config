@@ -16,6 +16,18 @@
 > 可以替换系统config 或env 配置
 > 使用 config("key");
 
+### 国际化 
+
+```php
+//resources/lang/zh-CN/dcat-config
+
+return [
+    'Basic'=>'基本配置'
+];
+
+```
+
+
 目前支持
 
 ```
