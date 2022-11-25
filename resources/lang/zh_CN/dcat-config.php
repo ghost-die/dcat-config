@@ -25,6 +25,7 @@ return [
         'key-regex'=>'键名只能包含字母数字',
         'name-required'=>'名称不能为空',
         'element-required'=>'组件不能为空',
+        'groups-required'=>'分组不可为空 请在拓展/设置内添加默认分组'
     ],
     'Option'=>[
         'Text' => '文本',

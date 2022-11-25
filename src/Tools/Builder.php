@@ -222,9 +222,17 @@ class Builder
         $tab = request()->get('tab');
         $attribute = request()->get('attribute');
 
+        Validator::make([
+            'tab' => $tab,
+            'attribute'=>$attribute
+        ], [
+            'tab' =>'required',
+            'attribute' =>'required'
+        ],[
+            'tab.required' => $this->__('builder.groups-required')
+        ])->validate();
+
         $attribute = collect($attribute)->map(function ($data) {
-
-
             if ($data['option']) {
                 $data['option'] = collect($this->textToArray($data['option']))->map(function ($value, $k) {
                     if (false === strpos($value, ':')) {
@@ -240,7 +248,6 @@ class Builder
             if ($data['rule']) {
                 $data['rule'] = $this->textToArray($data['rule']);
             }
-
             return $data;
         })->values();
 

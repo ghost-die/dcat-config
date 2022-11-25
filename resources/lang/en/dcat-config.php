@@ -25,6 +25,7 @@ return [
         'key-regex'=>'Key names can only contain alphanumeric.',
         'name-required'=>'Name is required.',
         'element-required'=>'Component cannot be empty.',
+        'groups-required'=>'The group cannot be empty. Please add a default group in the extension/settings',
     ],
 
     'Option'=>[
