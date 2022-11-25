@@ -26,7 +26,7 @@ return [
         'name-required'=>'名称不能为空',
         'element-required'=>'组件不能为空',
     ],
-    'option'=>[
+    'Option'=>[
         'Text' => '文本',
         'Select' => '下拉选框单选',
         'MultipleSelect' => '下拉选框多选',
