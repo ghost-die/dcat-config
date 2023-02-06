@@ -86,7 +86,7 @@ class Builder
         $this->data = collect(array_merge($tab, $this->data));
 
         $this->data->each(function ($value, $item) use ($tab) {
-            $this->form->tab(__("dcat-config.".trim($tab[$item])), function () use ($value, $item) {
+            $this->form->tab(admin_trans("dcat-config.".trim($tab[$item])), function () use ($value, $item) {
                 if (is_array($value)) {
                     collect($value)->each(function ($model) {
                         Field::make($model, $this->form)->{$model['element']}();
@@ -373,7 +373,7 @@ class Builder
             if ($self) {
                 $array[$item] = $this->__('Option.'.trim($value));
             }else{
-                $array[$item] = __("dcat-config.".trim($value));
+                $array[$item] = admin_trans("dcat-config.".trim($value));
             }
         }
 
