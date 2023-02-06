@@ -3,7 +3,7 @@
         @foreach($data as $k=>$v)
             <div class="p-1" data-toggle="collapse" href="#{{$k}}" aria-controls="{{$k}}">
                 <span class="font-weight-bolder font-md-4">
-                   {{ __("dcat-config.".trim($k)) }}
+                   {{ admin_trans("dcat-config.".trim($k)) }}
                 </span>
             </div>
             <div class="collapse show pl-4" id="{{$k}}">
