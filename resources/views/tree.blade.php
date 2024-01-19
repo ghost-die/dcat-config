@@ -30,7 +30,7 @@
 {{--                                <i class="feather icon-edit"></i>--}}
 {{--                            </span>--}}
 
-                            <a class="text-right text-danger delete" data-url="{{ admin_url('config/'.$str['key']) }}" href="#">
+                            <a class="text-right text-danger delete" data-key="{{ $str['key'] }}" data-url="{{ admin_url('config/'.$str['key']) }}" href="#">
                                 <i class="feather icon-trash-2"></i>
                             </a>
                         </dd>
@@ -54,20 +54,22 @@
 
         $('.delete').off('click').on('click', function (e) {
 
-            let url = $(this).data('url');
-            $.ajax(
-                {
-                    url: url,
-                    dataType: 'json',
-                    type:"post",
-                    delay: 250,
-                    data: {_method:'delete'},
-                    success: function (response) {
-                        Dcat.handleJsonResponse(response);
-                        return false;
-                    },
-                }
-            );
+            Dcat.confirm(`确认删除${$(this).data('key')} ?`, '', () => {
+                let url = $(this).data('url');
+                $.ajax(
+                    {
+                        url: url,
+                        dataType: 'json',
+                        type:"post",
+                        delay: 250,
+                        data: {_method:'delete'},
+                        success: function (response) {
+                            Dcat.handleJsonResponse(response);
+                            return false;
+                        },
+                    }
+                );
+            });
         });
     });
 
